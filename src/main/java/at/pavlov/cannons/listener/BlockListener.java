@@ -142,16 +142,18 @@ public class BlockListener implements Listener {
             if (Cannons.getPlugin().getConfig().getDouble("max_dismantle_temperature") >= cannon.getTemperature()) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage(ChatColor.RED + "Cannon too hot to dismantle.");
-            } else if (!Cannons.getPlugin().getConfig().getStringList("tools").contains(nulltoAir(event.getPlayer().getItemInHand()).getType().name())) {
-                List<Block> replace = cannon.getCannonDesign().getAllCannonBlocks(cannon).stream().map(Location::getBlock).collect(Collectors.toList());
-                plugin.getCannonManager().removeCannon(cannon, false, true, BreakCause.PlayerBreak);
-                plugin.logDebug("cannon broken:  " + cannon.isDestructibleBlock(event.getBlock().getLocation()));
-                replace.forEach(b -> b.setType(Material.AIR));
-                event.getPlayer().sendMessage(ChatColor.RED + "Cannon can only be dismantled properly with tools: " + Cannons.getPlugin().getConfig().getStringList("tools"));
             } else if (cannon.isDestructibleBlock(event.getBlock().getLocation())
                     && (aimingCannon == null || !cannon.equals(aimingCannon)) && !plugin.getCommandListener().isSelectingMode(event.getPlayer())) {
-                plugin.getCannonManager().removeCannon(cannon, false, true, BreakCause.PlayerBreak);
-                plugin.logDebug("cannon broken:  " + cannon.isDestructibleBlock(event.getBlock().getLocation()));
+                if (!Cannons.getPlugin().getConfig().getStringList("tools").contains(nulltoAir(event.getPlayer().getItemInHand()).getType().name())) {
+                    List<Block> replace = cannon.getCannonDesign().getAllCannonBlocks(cannon).stream().map(Location::getBlock).collect(Collectors.toList());
+                    plugin.getCannonManager().removeCannon(cannon, false, true, BreakCause.PlayerBreak);
+                    plugin.logDebug("cannon broken:  " + cannon.isDestructibleBlock(event.getBlock().getLocation()));
+                    replace.forEach(b -> b.setType(Material.AIR));
+                    event.getPlayer().sendMessage(ChatColor.RED + "Cannon can only be dismantled properly with tools: " + Cannons.getPlugin().getConfig().getStringList("tools"));
+                } else {
+                    plugin.getCannonManager().removeCannon(cannon, false, true, BreakCause.PlayerBreak);
+                    plugin.logDebug("cannon broken:  " + cannon.isDestructibleBlock(event.getBlock().getLocation()));
+                }
             } else {
                 event.setCancelled(true);
                 plugin.logDebug("cancelled cannon destruction: " + cannon.isDestructibleBlock(event.getBlock().getLocation()));
