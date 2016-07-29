@@ -163,7 +163,7 @@ public class CreateExplosion {
 
             plugin.logDebug("was the cannons explode event canceled: " + event.isCancelled());
             //if not canceled break all given blocks
-            if (!event.isCancelled()) {
+            if (!event.isCancelled() && Cannons.getPlugin().getConfig().getBoolean("piercing_breaks_blocks")) {
                 // break water, lava, obsidian if cannon projectile
                 for (int i = 0; i < event.blockList().size(); i++) {
                     Block pBlock = event.blockList().get(i);
