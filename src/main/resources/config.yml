@@ -4,6 +4,11 @@ general:
   #relays the new BlockExplodeEvent to the old EntityExplodeEvent for protection plugins, which don't support this feature
   relayExplosionEvent: false
 
+#Maximum dismantle temperature
+max_dismantle_temperature: 75
+
+#Allowed dismantle tools:
+tools: [DIAMOND_PICKAXE, IRON_PICKAXE, GOLD_PICKAXE]
 
 cannonLimits:
   #limits regarding how many cannons a player can build. set to false if you dont need it
