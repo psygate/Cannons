@@ -48,6 +48,7 @@ public class Target {
         this.groundLocation = entity.getLocation().clone();
         this.velocity = entity.getVelocity();
     }
+
     public Target(Cannon cannon) {
         this.name = cannon.getCannonName();
         this.targetType = TargetType.CANNON;

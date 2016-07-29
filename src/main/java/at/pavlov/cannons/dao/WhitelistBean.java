@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name ="whitelist")
+@Table(name = "whitelist")
 public class WhitelistBean {
     @Id
     private int id;

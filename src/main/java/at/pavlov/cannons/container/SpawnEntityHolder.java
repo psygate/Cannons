@@ -5,18 +5,16 @@ import org.bukkit.entity.EntityType;
 import java.util.Scanner;
 import java.util.regex.MatchResult;
 
-public class SpawnEntityHolder{
+public class SpawnEntityHolder {
     private EntityType type;
     private int minAmount;
     private int maxAmount;
 
-    public SpawnEntityHolder(String str)
-    {
+    public SpawnEntityHolder(String str) {
         //split string at space
         // NAME min-max
         // ZOMBIE 1-2
-        try
-        {
+        try {
             Scanner s = new Scanner(str);
             s.findInLine("(\\w+)\\s+(\\d+)-(\\d+)");
             MatchResult result = s.match();
@@ -25,9 +23,7 @@ public class SpawnEntityHolder{
             setMaxAmount(Integer.parseInt(result.group(3)));
             s.close();
             //System.out.println("id: " + getId() + " data: " + getData() + " min: " + minAmount + " max: " + maxAmount + " from str: " + str);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("Error while converting " + str + ". Check formatting (ZOMBIE 1-2)");
             setType(null);
             setMinAmount(0);

@@ -10,12 +10,10 @@ public class SoundHolder {
     private Float volume;
     private Float pitch;
 
-    public SoundHolder(String str)
-    {
+    public SoundHolder(String str) {
         // data structure:
         // 'IRONGOLEM_WALK:1:0.5'
-        try
-        {
+        try {
             sound = null;
             volume = 1.0F;
             pitch = 1.0F;
@@ -24,13 +22,11 @@ public class SoundHolder {
             // use US locale to be able to identify floats in the string
             s.useLocale(Locale.US);
 
-            if (s.hasNext())
-            {
+            if (s.hasNext()) {
                 String scan = s.next();
-                if (scan!=null && !scan.equalsIgnoreCase("none"))
+                if (scan != null && !scan.equalsIgnoreCase("none"))
                     sound = Sound.valueOf(scan);
-            }
-            else
+            } else
                 System.out.println("missing sound value in: " + str);
 
             if (s.hasNextFloat())
@@ -42,9 +38,7 @@ public class SoundHolder {
             else
                 System.out.println("missing pitch value in: " + str);
             s.close();
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("Error while converting " + str + ". Formatting: 'IRONGOLEM_WALK:1:0.5'" + e.toString());
         }
     }
@@ -79,7 +73,7 @@ public class SoundHolder {
         this.pitch = pitch;
     }
 
-    public boolean isValid(){
-        return this.sound!=null;
+    public boolean isValid() {
+        return this.sound != null;
     }
 }

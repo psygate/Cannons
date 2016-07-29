@@ -10,13 +10,11 @@ public class SpawnMaterialHolder {
     private int minAmount;
     private int maxAmount;
 
-    public SpawnMaterialHolder(String str)
-    {
+    public SpawnMaterialHolder(String str) {
         //split string at space
         // id:data min-max
         // 10:0 1-2
-        try
-        {
+        try {
             Scanner s = new Scanner(str);
             s.findInLine("(\\w+):(\\d+)\\s+(\\d+)-(\\d+)");
             MatchResult result = s.match();
@@ -25,11 +23,9 @@ public class SpawnMaterialHolder {
             setMaxAmount(Integer.parseInt(result.group(4)));
             s.close();
             //System.out.println("id: " + getId() + " data: " + getData() + " min: " + minAmount + " max: " + maxAmount + " from str: " + str);
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             System.out.println("Error while converting " + str + ". Check formatting (10:0 1-2)");
-            material = new MaterialHolder(Material.AIR,0);
+            material = new MaterialHolder(Material.AIR, 0);
             setMinAmount(0);
             setMaxAmount(0);
         }
@@ -57,11 +53,11 @@ public class SpawnMaterialHolder {
         this.maxAmount = maxAmount;
     }
 
-    public MaterialHolder getMaterial(){
+    public MaterialHolder getMaterial() {
         return this.material;
     }
 
-    public void setMaterial(MaterialHolder material){
+    public void setMaterial(MaterialHolder material) {
         this.material = material;
     }
 }

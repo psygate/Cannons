@@ -1,8 +1,6 @@
 package at.pavlov.cannons.projectile;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import at.pavlov.cannons.container.MaterialHolder;
 import at.pavlov.cannons.container.SoundHolder;
 import at.pavlov.cannons.container.SpawnEntityHolder;
 import at.pavlov.cannons.container.SpawnMaterialHolder;
@@ -11,51 +9,51 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
-import at.pavlov.cannons.container.MaterialHolder;
+import java.util.ArrayList;
+import java.util.List;
 
 
-
-public class Projectile implements Cloneable{
-	private String projectileID;
-	private String projectileName;
+public class Projectile implements Cloneable {
+    private String projectileID;
+    private String projectileName;
     private String description;
-	private String itemName;
-	private MaterialHolder loadingItem;
-	//list of items or blocks that can represent this this (e.g. redstone dust may for wire when you click a block)
-	private List<MaterialHolder> alternativeItemList = new ArrayList<MaterialHolder>();
-	
-	//properties of the cannonball
+    private String itemName;
+    private MaterialHolder loadingItem;
+    //list of items or blocks that can represent this this (e.g. redstone dust may for wire when you click a block)
+    private List<MaterialHolder> alternativeItemList = new ArrayList<MaterialHolder>();
+
+    //properties of the cannonball
     private EntityType projectileEntity;
     private boolean projectileOnFire;
-	private double velocity;	
-	private double penetration;
-	private double timefuse;
+    private double velocity;
+    private double penetration;
+    private double timefuse;
     private double automaticFiringDelay;
     private int automaticFiringMagazineSize;
-	private int numberOfBullets;
-	private double spreadMultiplier;
-	private List<ProjectileProperties> propertyList = new ArrayList<ProjectileProperties>();
+    private int numberOfBullets;
+    private double spreadMultiplier;
+    private List<ProjectileProperties> propertyList = new ArrayList<ProjectileProperties>();
 
     //smokeTrail
     private boolean smokeTrailEnabled;
     private int smokeTrailDistance;
     private MaterialHolder smokeTrailMaterial;
     private double smokeTrailDuration;
-	
-	//explosion
-	private float explosionPower;
-	private boolean explosionPowerDependsOnVelocity;
-	private boolean explosionDamage;
+
+    //explosion
+    private float explosionPower;
+    private boolean explosionPowerDependsOnVelocity;
+    private boolean explosionDamage;
     private boolean underwaterDamage;
-	private boolean penetrationDamage;
+    private boolean penetrationDamage;
     private double directHitDamage;
     private double playerDamageRange;
     private double playerDamage;
-	private double potionRange;
-	private double potionDuration;
-	private int potionAmplifier;
-	private List<PotionEffectType> potionsEffectList = new ArrayList<PotionEffectType>();
-	private boolean impactIndicator;
+    private double potionRange;
+    private double potionDuration;
+    private int potionAmplifier;
+    private List<PotionEffectType> potionsEffectList = new ArrayList<PotionEffectType>();
+    private boolean impactIndicator;
 
     //cluster
     private boolean clusterExplosionsEnabled;
@@ -68,11 +66,11 @@ public class Projectile implements Cloneable{
 
     //placeBlock
     private boolean spawnEnabled;
-	private double spawnBlockRadius;
+    private double spawnBlockRadius;
     private double spawnEntityRadius;
     private double spawnVelocity;
     private double spawnTntFuseTime;
-	private List<SpawnMaterialHolder> spawnBlocks = new ArrayList<SpawnMaterialHolder>();
+    private List<SpawnMaterialHolder> spawnBlocks = new ArrayList<SpawnMaterialHolder>();
     private List<SpawnEntityHolder> spawnEntities = new ArrayList<SpawnEntityHolder>();
     private List<String> spawnProjectiles;
 
@@ -93,310 +91,262 @@ public class Projectile implements Cloneable{
     private SoundHolder soundImpactProtected;
     private SoundHolder soundImpactWater;
 
-	//permissions
-	private List<String> permissionLoad = new ArrayList<String>();
-	
-	public Projectile(String id)
-	{
-		this.projectileID = id;
-	}
+    //permissions
+    private List<String> permissionLoad = new ArrayList<String>();
+
+    public Projectile(String id) {
+        this.projectileID = id;
+    }
 
     @Override
-    public Projectile clone(){
-        try
-        {
+    public Projectile clone() {
+        try {
             // call clone in Object.
             return (Projectile) super.clone();
-        }
-        catch(CloneNotSupportedException e)
-        {
+        } catch (CloneNotSupportedException e) {
             System.out.println("Cloning not allowed.");
             return this;
         }
     }
-	
-	/**
-	 * returns true if both the id and data are equivalent of data == -1
-	 * @param materialHolder the material of the loaded item
-	 * @return true if the materials match
-	 */
-	public boolean equals(MaterialHolder materialHolder)
-	{
+
+    /**
+     * returns true if both the id and data are equivalent of data == -1
+     *
+     * @param materialHolder the material of the loaded item
+     * @return true if the materials match
+     */
+    public boolean equals(MaterialHolder materialHolder) {
         return loadingItem.equalsFuzzy(materialHolder);
     }
 
-	/**
-	 * returns true if both the id and data are equivalent of data == -1
-	 * @param projectileID the file name id of the projectile
-	 * @return true if the id matches
-	 */
-	public boolean equals(String projectileID)
-	{
-		return this.projectileID.equals(projectileID);
-	}
-
-
-
-	/**
-	 * returns the ID and Data of the projectile
-	 */
-	public String toString()
-	{
-		return loadingItem.toString();
-	}
-	
-	/**
-	 * returns true if the projectile has this property
-	 * @param properties properties of the projectile
-	 * @return true if the projectile has this property
-	 */
-	public boolean hasProperty(ProjectileProperties properties)
-	{
-		for (ProjectileProperties propEnum : this.getPropertyList())
-		{
-			if (propEnum.equals(properties))
-				return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * returns true if the player has permission to use that projectile
-	 * @param player who tried to load this projectile
-	 * @return true if the player can load this projectile
-	 */
-	public boolean hasPermission(Player player)
-	{
-		if (player == null) return true;
-		
-		for (String perm : permissionLoad)
-		{
-			if(!player.hasPermission(perm))
-			{
-				//missing permission
-				return false;
-			}
-		}
-		//player has all permissions
-		return true;
-	}
-
-	
-
-	public String getItemName()
-	{
-		return itemName;
-	}
-
-
-	public void setItemName(String itemName)
-	{
-		this.itemName = itemName;
-	}
-
-
-	public String getProjectileName()
-	{
-		return projectileName;
-	}
-
-
-	public void setProjectileName(String projectileName)
-	{
-		this.projectileName = projectileName;
-	}
-	
-
-	public double getVelocity()
-	{
-		return velocity;
-	}
-
-
-	public void setVelocity(double velocity)
-	{
-		this.velocity = velocity;
-	}
+    /**
+     * returns true if both the id and data are equivalent of data == -1
+     *
+     * @param projectileID the file name id of the projectile
+     * @return true if the id matches
+     */
+    public boolean equals(String projectileID) {
+        return this.projectileID.equals(projectileID);
+    }
 
-
-	public double getPenetration()
-	{
-		return penetration;
-	}
 
+    /**
+     * returns the ID and Data of the projectile
+     */
+    public String toString() {
+        return loadingItem.toString();
+    }
 
-	public void setPenetration(double penetration)
-	{
-		this.penetration = penetration;
-	}
+    /**
+     * returns true if the projectile has this property
+     *
+     * @param properties properties of the projectile
+     * @return true if the projectile has this property
+     */
+    public boolean hasProperty(ProjectileProperties properties) {
+        for (ProjectileProperties propEnum : this.getPropertyList()) {
+            if (propEnum.equals(properties))
+                return true;
+        }
+        return false;
+    }
 
+    /**
+     * returns true if the player has permission to use that projectile
+     *
+     * @param player who tried to load this projectile
+     * @return true if the player can load this projectile
+     */
+    public boolean hasPermission(Player player) {
+        if (player == null) return true;
 
-	public double getTimefuse()
-	{
-		return timefuse;
-	}
+        for (String perm : permissionLoad) {
+            if (!player.hasPermission(perm)) {
+                //missing permission
+                return false;
+            }
+        }
+        //player has all permissions
+        return true;
+    }
 
 
-	public void setTimefuse(double timefuse)
-	{
-		this.timefuse = timefuse;
-	}
+    public String getItemName() {
+        return itemName;
+    }
 
 
-	public int getNumberOfBullets()
-	{
-		return numberOfBullets;
-	}
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
+    }
 
 
-	public void setNumberOfBullets(int numberOfBullets)
-	{
-		this.numberOfBullets = numberOfBullets;
-	}
+    public String getProjectileName() {
+        return projectileName;
+    }
 
 
-	public double getSpreadMultiplier()
-	{
-		return spreadMultiplier;
-	}
+    public void setProjectileName(String projectileName) {
+        this.projectileName = projectileName;
+    }
 
 
-	public void setSpreadMultiplier(double spreadMultiplier)
-	{
-		this.spreadMultiplier = spreadMultiplier;
-	}
+    public double getVelocity() {
+        return velocity;
+    }
 
 
-	List<ProjectileProperties> getPropertyList()
-	{
-		return propertyList;
-	}
+    public void setVelocity(double velocity) {
+        this.velocity = velocity;
+    }
 
 
-	public void setPropertyList(List<ProjectileProperties> propertyList)
-	{
-		this.propertyList = propertyList;
-	}
+    public double getPenetration() {
+        return penetration;
+    }
 
 
-	public float getExplosionPower()
-	{
-		return explosionPower;
-	}
+    public void setPenetration(double penetration) {
+        this.penetration = penetration;
+    }
 
 
-	public void setExplosionPower(float explosionPower)
-	{
-		this.explosionPower = explosionPower;
-	}
+    public double getTimefuse() {
+        return timefuse;
+    }
 
 
-	public double getPotionRange()
-	{
-		return potionRange;
-	}
+    public void setTimefuse(double timefuse) {
+        this.timefuse = timefuse;
+    }
 
 
-	public void setPotionRange(double potionRange)
-	{
-		this.potionRange = potionRange;
-	}
+    public int getNumberOfBullets() {
+        return numberOfBullets;
+    }
 
 
-	public double getPotionDuration()
-	{
-		return potionDuration;
-	}
+    public void setNumberOfBullets(int numberOfBullets) {
+        this.numberOfBullets = numberOfBullets;
+    }
 
 
-	public void setPotionDuration(double potionDuration)
-	{
-		this.potionDuration = potionDuration;
-	}
+    public double getSpreadMultiplier() {
+        return spreadMultiplier;
+    }
 
 
-	public int getPotionAmplifier()
-	{
-		return potionAmplifier;
-	}
+    public void setSpreadMultiplier(double spreadMultiplier) {
+        this.spreadMultiplier = spreadMultiplier;
+    }
 
 
-	public void setPotionAmplifier(int potionAmplifier)
-	{
-		this.potionAmplifier = potionAmplifier;
-	}
+    List<ProjectileProperties> getPropertyList() {
+        return propertyList;
+    }
 
 
-	public List<PotionEffectType> getPotionsEffectList()
-	{
-		return potionsEffectList;
-	}
+    public void setPropertyList(List<ProjectileProperties> propertyList) {
+        this.propertyList = propertyList;
+    }
 
 
-	public void setPotionsEffectList(List<PotionEffectType> potionsEffectList)
-	{
-		this.potionsEffectList = potionsEffectList;
-	}
+    public float getExplosionPower() {
+        return explosionPower;
+    }
 
-	public String getProjectileID()
-	{
-		return projectileID;
-	}
 
-	public void setProjectileID(String projectileID)
-	{
-		this.projectileID = projectileID;
-	}
+    public void setExplosionPower(float explosionPower) {
+        this.explosionPower = explosionPower;
+    }
 
-	public MaterialHolder getLoadingItem()
-	{
-		return loadingItem;
-	}
 
-	public void setLoadingItem(MaterialHolder loadingItem)
-	{
-		this.loadingItem = loadingItem;
-	}
+    public double getPotionRange() {
+        return potionRange;
+    }
 
-	public List<MaterialHolder> getAlternativeItemList()
-	{
-		return alternativeItemList;
-	}
 
-	public void setAlternativeItemList(List<MaterialHolder> alternativeItemList)
-	{
-		this.alternativeItemList = alternativeItemList;
-	}
+    public void setPotionRange(double potionRange) {
+        this.potionRange = potionRange;
+    }
 
-	public boolean getExplosionDamage()
-	{
-		return explosionDamage;
-	}
 
-	public void setExplosionDamage(boolean explosionDamage)
-	{
-		this.explosionDamage = explosionDamage;
-	}
+    public double getPotionDuration() {
+        return potionDuration;
+    }
 
-	public boolean getPenetrationDamage()
-	{
-		return penetrationDamage;
-	}
 
-	public void setPenetrationDamage(boolean penetrationDamage)
-	{
-		this.penetrationDamage = penetrationDamage;
-	}
+    public void setPotionDuration(double potionDuration) {
+        this.potionDuration = potionDuration;
+    }
 
-	public List<String> getPermissionLoad()
-	{
-		return permissionLoad;
-	}
 
-	public void setPermissionLoad(List<String> permissionLoad)
-	{
-		this.permissionLoad = permissionLoad;
-	}
+    public int getPotionAmplifier() {
+        return potionAmplifier;
+    }
+
+
+    public void setPotionAmplifier(int potionAmplifier) {
+        this.potionAmplifier = potionAmplifier;
+    }
+
+
+    public List<PotionEffectType> getPotionsEffectList() {
+        return potionsEffectList;
+    }
+
+
+    public void setPotionsEffectList(List<PotionEffectType> potionsEffectList) {
+        this.potionsEffectList = potionsEffectList;
+    }
+
+    public String getProjectileID() {
+        return projectileID;
+    }
+
+    public void setProjectileID(String projectileID) {
+        this.projectileID = projectileID;
+    }
+
+    public MaterialHolder getLoadingItem() {
+        return loadingItem;
+    }
+
+    public void setLoadingItem(MaterialHolder loadingItem) {
+        this.loadingItem = loadingItem;
+    }
+
+    public List<MaterialHolder> getAlternativeItemList() {
+        return alternativeItemList;
+    }
+
+    public void setAlternativeItemList(List<MaterialHolder> alternativeItemList) {
+        this.alternativeItemList = alternativeItemList;
+    }
+
+    public boolean getExplosionDamage() {
+        return explosionDamage;
+    }
+
+    public void setExplosionDamage(boolean explosionDamage) {
+        this.explosionDamage = explosionDamage;
+    }
+
+    public boolean getPenetrationDamage() {
+        return penetrationDamage;
+    }
+
+    public void setPenetrationDamage(boolean penetrationDamage) {
+        this.penetrationDamage = penetrationDamage;
+    }
+
+    public List<String> getPermissionLoad() {
+        return permissionLoad;
+    }
+
+    public void setPermissionLoad(List<String> permissionLoad) {
+        this.permissionLoad = permissionLoad;
+    }
 
     public double getDirectHitDamage() {
         return directHitDamage;
@@ -526,16 +476,14 @@ public class Projectile implements Cloneable{
         this.description = description;
     }
 
-	public boolean isExplosionPowerDependsOnVelocity()
-	{
-		return explosionPowerDependsOnVelocity;
-	}
-	
+    public boolean isExplosionPowerDependsOnVelocity() {
+        return explosionPowerDependsOnVelocity;
+    }
 
-	public void setExplosionPowerDependsOnVelocity(boolean explosionPowerDependsOnVelocity)
-	{
-		this.explosionPowerDependsOnVelocity = explosionPowerDependsOnVelocity;
-	}
+
+    public void setExplosionPowerDependsOnVelocity(boolean explosionPowerDependsOnVelocity) {
+        this.explosionPowerDependsOnVelocity = explosionPowerDependsOnVelocity;
+    }
 
     public boolean isClusterExplosionsEnabled() {
         return clusterExplosionsEnabled;
@@ -689,13 +637,13 @@ public class Projectile implements Cloneable{
         this.soundImpactProtected = soundImpactProtected;
     }
 
-	public boolean isImpactIndicator() {
-		return impactIndicator;
-	}
+    public boolean isImpactIndicator() {
+        return impactIndicator;
+    }
 
-	public void setImpactIndicator(boolean impactIndicator) {
-		this.impactIndicator = impactIndicator;
-	}
+    public void setImpactIndicator(boolean impactIndicator) {
+        this.impactIndicator = impactIndicator;
+    }
 
     public boolean isSmokeTrailEnabled() {
         return smokeTrailEnabled;

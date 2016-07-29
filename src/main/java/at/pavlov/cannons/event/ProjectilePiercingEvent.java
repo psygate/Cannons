@@ -8,20 +8,21 @@ import org.bukkit.event.HandlerList;
 
 import java.util.List;
 
-public class ProjectilePiercingEvent extends Event
-{
+public class ProjectilePiercingEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private Projectile projectile;
     private Location impactLocation;
     private List<Block> blockList;
 
-    public ProjectilePiercingEvent(Projectile projectile, Location impactLocation, List<Block> blockList)
-    {
+    public ProjectilePiercingEvent(Projectile projectile, Location impactLocation, List<Block> blockList) {
         this.projectile = projectile;
         this.impactLocation = impactLocation;
         this.blockList = blockList;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
     public Location getImpactLocation() {
         return impactLocation;
@@ -40,10 +41,6 @@ public class ProjectilePiercingEvent extends Event
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

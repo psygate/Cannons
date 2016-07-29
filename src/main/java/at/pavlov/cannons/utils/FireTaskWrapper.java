@@ -2,22 +2,22 @@ package at.pavlov.cannons.utils;
 
 import at.pavlov.cannons.Enum.ProjectileCause;
 import at.pavlov.cannons.cannon.Cannon;
+
 import java.util.UUID;
 
 
-public class FireTaskWrapper{
-	private Cannon cannon;
+public class FireTaskWrapper {
+    private Cannon cannon;
     private UUID player;
     private boolean removeCharge;
     private ProjectileCause projectileCause;
 
-	public FireTaskWrapper(Cannon cannon, UUID player, boolean removeCharge, ProjectileCause projectileCause)
-    {
+    public FireTaskWrapper(Cannon cannon, UUID player, boolean removeCharge, ProjectileCause projectileCause) {
         this.cannon = cannon;
         this.player = player;
         this.removeCharge = removeCharge;
         this.projectileCause = projectileCause;
-	}
+    }
 
     public Cannon getCannon() {
         return cannon;

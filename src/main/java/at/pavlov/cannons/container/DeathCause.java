@@ -9,7 +9,7 @@ public class DeathCause {
     private UUID cannonUID;
     private UUID shooterUID;
 
-    public DeathCause(Projectile projectile, UUID cannonUID, UUID shooterUID){
+    public DeathCause(Projectile projectile, UUID cannonUID, UUID shooterUID) {
         this.projectile = projectile;
         this.cannonUID = cannonUID;
         this.shooterUID = shooterUID;

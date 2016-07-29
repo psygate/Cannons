@@ -15,11 +15,14 @@ public class CannonTargetEvent extends Event {
     private final Target target;
     private boolean cancelled;
 
-    public CannonTargetEvent(Cannon cannon, Target player)
-    {
+    public CannonTargetEvent(Cannon cannon, Target player) {
         this.cannon = cannon;
         this.target = player;
         this.cancelled = false;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     public Cannon getCannon() {
@@ -39,10 +42,6 @@ public class CannonTargetEvent extends Event {
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

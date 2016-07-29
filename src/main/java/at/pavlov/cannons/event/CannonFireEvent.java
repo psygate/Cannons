@@ -12,11 +12,14 @@ public class CannonFireEvent extends Event {
     private final UUID player;
     private boolean cancelled;
 
-    public CannonFireEvent(Cannon cannon, UUID player)
-    {
+    public CannonFireEvent(Cannon cannon, UUID player) {
         this.cannon = cannon;
         this.player = player;
         this.cancelled = false;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     public Cannon getCannon() {
@@ -36,10 +39,6 @@ public class CannonFireEvent extends Event {
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

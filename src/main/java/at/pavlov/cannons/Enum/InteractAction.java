@@ -1,7 +1,6 @@
 package at.pavlov.cannons.Enum;
 
-public enum InteractAction
-{
+public enum InteractAction {
     cleaningCannon,
     loadGunpowder,
     loadProjectile,

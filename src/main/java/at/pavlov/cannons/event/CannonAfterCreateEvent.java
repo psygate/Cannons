@@ -1,29 +1,27 @@
 package at.pavlov.cannons.event;
 
-import org.bukkit.entity.Player;
+import at.pavlov.cannons.cannon.Cannon;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-
-import at.pavlov.cannons.cannon.Cannon;
 
 import java.util.UUID;
 
 public class CannonAfterCreateEvent extends Event {
-	private static final HandlerList handlers = new HandlerList();
-	private final Cannon cannon;
-	private final UUID player;
-	
-	public CannonAfterCreateEvent(Cannon cannon, UUID player) {
-		
-		this.cannon = cannon;
-		this.player = player;
-	}
-	
-	public HandlerList getHandlers() {
-		return handlers;
-	}
-	
+    private static final HandlerList handlers = new HandlerList();
+    private final Cannon cannon;
+    private final UUID player;
+
+    public CannonAfterCreateEvent(Cannon cannon, UUID player) {
+
+        this.cannon = cannon;
+        this.player = player;
+    }
+
     public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
+    public HandlerList getHandlers() {
         return handlers;
     }
 

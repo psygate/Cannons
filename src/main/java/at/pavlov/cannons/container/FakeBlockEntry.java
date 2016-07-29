@@ -8,26 +8,21 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class FakeBlockEntry implements Cloneable{
+public class FakeBlockEntry implements Cloneable {
     private final int locX;
     private final int locY;
     private final int locZ;
     private final UUID world;
-
-    private long startTime;
     //how long the block stays in ticks
     private final long duration;
-
     //fake block will only be shown to this player
     private final UUID player;
     //only one type effect will be shown (aiming, explosion,...)
     private final FakeBlockType type;
+    private long startTime;
 
 
-
-
-    public FakeBlockEntry(Location loc, Player player, FakeBlockType type, long duration)
-    {
+    public FakeBlockEntry(Location loc, Player player, FakeBlockType type, long duration) {
         this.locX = loc.getBlockX();
         this.locY = loc.getBlockY();
         this.locZ = loc.getBlockZ();
@@ -61,10 +56,10 @@ public class FakeBlockEntry implements Cloneable{
         return Bukkit.getWorld(getWorld());
     }
 
-    public Location getLocation(){
+    public Location getLocation() {
         World world = getWorldBukkit();
-        if(world != null)
-            return new Location(world,getLocX(),getLocY(),getLocZ());
+        if (world != null)
+            return new Location(world, getLocX(), getLocY(), getLocZ());
         else
             return null;
     }
@@ -73,8 +68,7 @@ public class FakeBlockEntry implements Cloneable{
         return startTime;
     }
 
-    public void setStartTime(long startTime)
-    {
+    public void setStartTime(long startTime) {
         this.startTime = startTime;
     }
 
@@ -82,8 +76,8 @@ public class FakeBlockEntry implements Cloneable{
         return duration;
     }
 
-    public boolean isExpired(){
-        return (System.currentTimeMillis() > getStartTime() + getDuration()*50);
+    public boolean isExpired() {
+        return (System.currentTimeMillis() > getStartTime() + getDuration() * 50);
     }
 
     public UUID getPlayer() {
@@ -108,8 +102,7 @@ public class FakeBlockEntry implements Cloneable{
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
         FakeBlockEntry obj2 = (FakeBlockEntry) obj;
         return this.locX == obj2.getLocX() && this.locY == obj2.getLocY() && this.locZ == obj2.getLocZ() && this.world.equals(obj2.getWorld())
                 && this.player.equals(obj2.getPlayer())

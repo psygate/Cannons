@@ -12,13 +12,11 @@ public enum ProjectileCause {
 
     private final String str;
 
-    ProjectileCause(String str)
-    {
+    ProjectileCause(String str) {
         this.str = str;
     }
 
-    public String getString()
-    {
+    public String getString() {
         return str;
     }
 

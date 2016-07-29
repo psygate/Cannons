@@ -14,8 +14,7 @@ public class MovingObject {
     private Vector vel;
 
 
-    public MovingObject(Location loc, Vector vel)
-    {
+    public MovingObject(Location loc, Vector vel) {
         world = loc.getWorld().getUID();
         this.loc = loc.toVector();
         this.vel = vel;
@@ -23,10 +22,10 @@ public class MovingObject {
 
     /**
      * calculates the new position for the projectile
+     *
      * @param inWater the projectile is in water
      */
-    public void updateProjectileLocation(boolean inWater)
-    {
+    public void updateProjectileLocation(boolean inWater) {
         double f2 = 0.99F;
         if (inWater)
             f2 = 0.8F;
@@ -36,15 +35,15 @@ public class MovingObject {
         //slow down projectile
         this.vel.multiply(f2);
         //apply gravity
-        this.vel.subtract(new Vector(0,f3,0));
+        this.vel.subtract(new Vector(0, f3, 0));
     }
 
     /**
      * reverts and update of the projectile position
+     *
      * @param inWater the projectile is in water
      */
-    public void revertProjectileLocation(boolean inWater)
-    {
+    public void revertProjectileLocation(boolean inWater) {
         double f2 = 0.99F;
         if (inWater)
             f2 = 0.8F;
@@ -59,11 +58,11 @@ public class MovingObject {
 
     /**
      * teleports the projectile to this location
+     *
      * @param loc the projectile will be teleported to this location
      * @param vel velocity of the object
      */
-    public void teleport(Location loc, Vector vel)
-    {
+    public void teleport(Location loc, Vector vel) {
         this.loc = loc.toVector();
         this.vel = vel;
         this.world = loc.getWorld().getUID();
@@ -71,15 +70,14 @@ public class MovingObject {
 
     /**
      * returns the calculated location of the projectile
+     *
      * @return the location where the projectile should be
      */
-    public Location getLocation()
-    {
+    public Location getLocation() {
         return loc.toLocation(Bukkit.getWorld(world));
     }
 
-    public void setLocation(Location loc)
-    {
+    public void setLocation(Location loc) {
         this.loc = loc.toVector();
         this.world = loc.getWorld().getUID();
     }

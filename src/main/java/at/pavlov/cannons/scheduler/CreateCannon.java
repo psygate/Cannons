@@ -10,7 +10,7 @@ public class CreateCannon extends BukkitRunnable {
     private final Cannons plugin;
     private Cannon cannon;
 
-    public CreateCannon(Cannons plugin, Cannon cannon){
+    public CreateCannon(Cannons plugin, Cannon cannon) {
         this.plugin = plugin;
         this.cannon = cannon;
     }

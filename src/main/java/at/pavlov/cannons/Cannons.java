@@ -1,24 +1,24 @@
 package at.pavlov.cannons;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
-
 import at.pavlov.cannons.API.CannonsAPI;
 import at.pavlov.cannons.Enum.MessageEnum;
+import at.pavlov.cannons.cannon.Cannon;
+import at.pavlov.cannons.cannon.CannonDesign;
 import at.pavlov.cannons.cannon.CannonManager;
 import at.pavlov.cannons.cannon.DesignStorage;
-import at.pavlov.cannons.config.*;
+import at.pavlov.cannons.config.Config;
 import at.pavlov.cannons.container.MaterialHolder;
+import at.pavlov.cannons.dao.CannonBean;
+import at.pavlov.cannons.dao.MyDatabase;
+import at.pavlov.cannons.dao.PersistenceDatabase;
 import at.pavlov.cannons.dao.WhitelistBean;
 import at.pavlov.cannons.listener.*;
+import at.pavlov.cannons.projectile.Projectile;
 import at.pavlov.cannons.projectile.ProjectileManager;
 import at.pavlov.cannons.projectile.ProjectileStorage;
 import at.pavlov.cannons.scheduler.FakeBlockHandler;
 import at.pavlov.cannons.scheduler.ProjectileObserver;
+import com.avaje.ebean.EbeanServer;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,47 +32,39 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.avaje.ebean.EbeanServer;
-
-import at.pavlov.cannons.cannon.Cannon;
-import at.pavlov.cannons.cannon.CannonDesign;
-import at.pavlov.cannons.dao.CannonBean;
-import at.pavlov.cannons.dao.MyDatabase;
-import at.pavlov.cannons.dao.PersistenceDatabase;
-import at.pavlov.cannons.projectile.Projectile;
 import org.mcstats.MetricsLite;
 
-public final class Cannons extends JavaPlugin
-{
-	private PluginManager pm;
-	private final Logger logger = Logger.getLogger("Minecraft");
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
 
+public final class Cannons extends JavaPlugin {
+    private final Logger logger = Logger.getLogger("Minecraft");
     private final Config config;
-	private final FireCannon fireCannon;
-	private final CreateExplosion explosion;
-	private final Aiming aiming;
+    private final FireCannon fireCannon;
+    private final CreateExplosion explosion;
+    private final Aiming aiming;
     private final ProjectileObserver observer;
     private final FakeBlockHandler fakeBlockHandler;
-
     private final CannonsAPI cannonsAPI;
-    private Economy economy;
-	
-	//Listener
+    //Listener
     private final BlockListener blockListener;
-	private final PlayerListener playerListener;
-	private final EntityListener entityListener;
-	private final SignListener signListener;
+    private final PlayerListener playerListener;
+    private final EntityListener entityListener;
+    private final SignListener signListener;
     private final Commands commands;
-	
-	// database
-	private final PersistenceDatabase persistenceDatabase;
-	private MyDatabase database;
+    // database
+    private final PersistenceDatabase persistenceDatabase;
+    private PluginManager pm;
+    private Economy economy;
+    private MyDatabase database;
 
 
-	public Cannons()
-	{
-		super();
+    public Cannons() {
+        super();
 
         //setup all classes
         this.config = new Config(this);
@@ -97,105 +89,93 @@ public final class Cannons extends JavaPlugin
         return (Cannons) Bukkit.getPluginManager().getPlugin("Cannons");
     }
 
-	public void onDisable()
-	{
-		getServer().getScheduler().cancelTasks(this);
-		
-		// save database on shutdown
-		persistenceDatabase.saveAllCannons();
+    public void onDisable() {
+        getServer().getScheduler().cancelTasks(this);
 
-		logger.info(getLogPrefix() + "Cannons plugin v" + getPluginDescription().getVersion() + " has been disabled");
-	}
+        // save database on shutdown
+        persistenceDatabase.saveAllCannons();
 
-	public void onEnable()
-	{
+        logger.info(getLogPrefix() + "Cannons plugin v" + getPluginDescription().getVersion() + " has been disabled");
+    }
+
+    public void onEnable() {
         long startTime = System.nanoTime();
 
-		//load some global variables
-		pm = getServer().getPluginManager();
+        //load some global variables
+        pm = getServer().getPluginManager();
         ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
-		
-		//inform the user if worldedit it missing
-		if (!checkWorldEdit())
-		{
-			//no worldEdit has been loaded. Disable plugin
-			console.sendMessage(ChatColor.RED + "[Cannons] Please install WorldEdit, else Cannons can't load.");
-			console.sendMessage(ChatColor.RED + "[Cannons] Plugin is now disabled.");
-			
-			pm.disablePlugin(this);
-			return;
-		}
+
+        //inform the user if worldedit it missing
+        if (!checkWorldEdit()) {
+            //no worldEdit has been loaded. Disable plugin
+            console.sendMessage(ChatColor.RED + "[Cannons] Please install WorldEdit, else Cannons can't load.");
+            console.sendMessage(ChatColor.RED + "[Cannons] Plugin is now disabled.");
+
+            pm.disablePlugin(this);
+            return;
+        }
         setupEconomy();
-		
 
-		try
-		{
-			pm.registerEvents(blockListener, this);
-			pm.registerEvents(playerListener, this);
-			pm.registerEvents(entityListener, this);
-			pm.registerEvents(signListener, this);
-			//call command executer
-			getCommand("cannons").setExecutor(commands);
 
-			// load config
-			config.loadConfig();
+        try {
+            pm.registerEvents(blockListener, this);
+            pm.registerEvents(playerListener, this);
+            pm.registerEvents(entityListener, this);
+            pm.registerEvents(signListener, this);
+            //call command executer
+            getCommand("cannons").setExecutor(commands);
 
-			// Initialize the database
-            getServer().getScheduler().runTaskAsynchronously(this, new Runnable()
-            {
-                public void run()
-                {
+            // load config
+            config.loadConfig();
+
+            // Initialize the database
+            getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+                public void run() {
                     initializeDatabase();
                     // load cannons from database
                     persistenceDatabase.loadCannonsAsync();
                 }
             });
 
-			// setting up Aiming Mode Task
-			aiming.initAimingMode();
+            // setting up Aiming Mode Task
+            aiming.initAimingMode();
             // setting up the Teleporter
             observer.setupScheduler();
             fakeBlockHandler.setupScheduler();
 
-			// save cannons
-			getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable()
-			{
-				public void run()
-				{
-					persistenceDatabase.saveAllCannonsAsync();
-				}
-			}, 6000L, 6000L);
-			
-			try {
-			    MetricsLite metrics = new MetricsLite(this);
-			    metrics.start();
-			} catch (IOException e) {
-			    // Failed to submit the stats :-(
-			}
+            // save cannons
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                public void run() {
+                    persistenceDatabase.saveAllCannonsAsync();
+                }
+            }, 6000L, 6000L);
 
-            logDebug("Time to enable cannons: " + new DecimalFormat("0.00").format((System.nanoTime() - startTime)/1000000.0) + "ms");
+            try {
+                MetricsLite metrics = new MetricsLite(this);
+                metrics.start();
+            } catch (IOException e) {
+                // Failed to submit the stats :-(
+            }
+
+            logDebug("Time to enable cannons: " + new DecimalFormat("0.00").format((System.nanoTime() - startTime) / 1000000.0) + "ms");
 
             // Plugin succesfully enabled
             logger.info(getLogPrefix() + "Cannons plugin v" + getPluginDescription().getVersion() + " has been enabled");
-		}
-		catch (Exception ex)
-		{
-			// Plugin failed to enable
-			logSevere(String.format("[%s v%s] could not be enabled!", getDescription().getName(), getDescription().getVersion()));
+        } catch (Exception ex) {
+            // Plugin failed to enable
+            logSevere(String.format("[%s v%s] could not be enabled!", getDescription().getName(), getDescription().getVersion()));
 
-			// Print the stack trace of the actual cause
-			Throwable t = ex;
-			while (t != null)
-			{
-				if (t.getCause() == null)
-				{
-					logSevere(String.format("[%s v%s] exception:", getDescription().getName(), getDescription().getVersion()));
-					t.printStackTrace();
-				}
+            // Print the stack trace of the actual cause
+            Throwable t = ex;
+            while (t != null) {
+                if (t.getCause() == null) {
+                    logSevere(String.format("[%s v%s] exception:", getDescription().getName(), getDescription().getVersion()));
+                    t.printStackTrace();
+                }
 
-				t = t.getCause();
-			}
-		}
+                t = t.getCause();
+            }
+        }
     }
 
     private boolean setupEconomy() {
@@ -210,196 +190,165 @@ public final class Cannons extends JavaPlugin
         return economy != null;
     }
 
-	// set up ebean database
-	private void initializeDatabase()
-	{
+    // set up ebean database
+    private void initializeDatabase() {
         Configuration config = getConfig();
 
-		database = new MyDatabase(this)
-		{
-			protected java.util.List<Class<?>> getDatabaseClasses()
-			{
-				List<Class<?>> list = new ArrayList<Class<?>>();
-				list.add(CannonBean.class);
-				list.add(WhitelistBean.class);
+        database = new MyDatabase(this) {
+            protected java.util.List<Class<?>> getDatabaseClasses() {
+                List<Class<?>> list = new ArrayList<Class<?>>();
+                list.add(CannonBean.class);
+                list.add(WhitelistBean.class);
 
-				return list;
-			}
+                return list;
+            }
         };
-		//.Formatter:off
-		database.initializeDatabase(config.getString("database.driver", "org.sqlite.JDBC"),
-				config.getString("database.url", "jdbc:sqlite:{DIR}{NAME}.db"), 
-				config.getString("database.username", "bukkit"), 
-				config.getString("database.password", "walrus"),
-				config.getString("database.isolation", "SERIALIZABLE"), 
-				getMyConfig().isDebugMode(),
-				false//config.getBoolean("database.rebuild", false)
-				);
-		//.Formatter:on
-		
-		//config.set("database.rebuild", false);
-		//saveConfig();
+        //.Formatter:off
+        database.initializeDatabase(config.getString("database.driver", "org.sqlite.JDBC"),
+                config.getString("database.url", "jdbc:sqlite:{DIR}{NAME}.db"),
+                config.getString("database.username", "bukkit"),
+                config.getString("database.password", "walrus"),
+                config.getString("database.isolation", "SERIALIZABLE"),
+                getMyConfig().isDebugMode(),
+                false//config.getBoolean("database.rebuild", false)
+        );
+        //.Formatter:on
+
+        //config.set("database.rebuild", false);
+        //saveConfig();
     }
 
-	@Override
-	public EbeanServer getDatabase()
-	{
-		return database.getDatabase();
-	}
+    @Override
+    public EbeanServer getDatabase() {
+        return database.getDatabase();
+    }
 
-	public boolean isPluginEnabled()
-	{
-		return this.isEnabled();
-	}
+    public boolean isPluginEnabled() {
+        return this.isEnabled();
+    }
 
-	public final Config getMyConfig()
-	{
-		return config;
-	}
+    public final Config getMyConfig() {
+        return config;
+    }
 
-	public void disablePlugin()
-	{
-		pm.disablePlugin(this);
-	}
+    public void disablePlugin() {
+        pm.disablePlugin(this);
+    }
 
-	private String getLogPrefix()
-	{
-		return "[" + getPluginDescription().getName() + "] ";
-	}
+    private String getLogPrefix() {
+        return "[" + getPluginDescription().getName() + "] ";
+    }
 
-	public void logSevere(String msg)
-	{
-		//msg = ChatColor.translateAlternateColorCodes('&', msg);
-		this.logger.severe(ChatColor.RED + getLogPrefix() + ChatColor.stripColor(msg));
-	}
-	
-	public void logInfo(String msg)
-	{
-		//msg = ChatColor.translateAlternateColorCodes('&', msg);
-		this.logger.info(getLogPrefix() + ChatColor.stripColor(msg));
-	}
+    public void logSevere(String msg) {
+        //msg = ChatColor.translateAlternateColorCodes('&', msg);
+        this.logger.severe(ChatColor.RED + getLogPrefix() + ChatColor.stripColor(msg));
+    }
 
-	public void logDebug(String msg)
-	{
-		if (config.isDebugMode())
-			this.logger.info(getLogPrefix() + ChatColor.stripColor(msg));
-	}
+    public void logInfo(String msg) {
+        //msg = ChatColor.translateAlternateColorCodes('&', msg);
+        this.logger.info(getLogPrefix() + ChatColor.stripColor(msg));
+    }
 
-	public void broadcast(String msg)
-	{
-		this.getServer().broadcastMessage(msg);
-	}
+    public void logDebug(String msg) {
+        if (config.isDebugMode())
+            this.logger.info(getLogPrefix() + ChatColor.stripColor(msg));
+    }
 
-	public PluginDescriptionFile getPluginDescription()
-	{
-		return this.getDescription();
-	}
-	
-	/**
-	 * checks if WorldEdit is running
-	 * @return true is WorldEdit is running
-	 */
-	private boolean checkWorldEdit()
-	{
-		Plugin plug = pm.getPlugin("WorldEdit");
+    public void broadcast(String msg) {
+        this.getServer().broadcastMessage(msg);
+    }
+
+    public PluginDescriptionFile getPluginDescription() {
+        return this.getDescription();
+    }
+
+    /**
+     * checks if WorldEdit is running
+     *
+     * @return true is WorldEdit is running
+     */
+    private boolean checkWorldEdit() {
+        Plugin plug = pm.getPlugin("WorldEdit");
         return plug != null;
     }
 
-	public PersistenceDatabase getPersistenceDatabase()
-	{
-		return persistenceDatabase;
-	}
+    public PersistenceDatabase getPersistenceDatabase() {
+        return persistenceDatabase;
+    }
 
-	public CannonManager getCannonManager()
-	{
-		return this.config.getCannonManager();
-	}
+    public CannonManager getCannonManager() {
+        return this.config.getCannonManager();
+    }
 
-	public FireCannon getFireCannon()
-	{
-		return fireCannon;
-	}
+    public FireCannon getFireCannon() {
+        return fireCannon;
+    }
 
-	public CreateExplosion getExplosion()
-	{
-		return explosion;
-	}
+    public CreateExplosion getExplosion() {
+        return explosion;
+    }
 
-	public Aiming getAiming()
-	{
-		return aiming;
-	}
+    public Aiming getAiming() {
+        return aiming;
+    }
 
-	public PlayerListener getPlayerListener()
-	{
-		return playerListener;
-	}
+    public PlayerListener getPlayerListener() {
+        return playerListener;
+    }
 
-	public SignListener getSignListener()
-	{
-		return signListener;
-	}
+    public SignListener getSignListener() {
+        return signListener;
+    }
 
-	public DesignStorage getDesignStorage()
-	{
-		return this.config.getDesignStorage();
-	}
-	
-	public CannonDesign getCannonDesign(Cannon cannon)
-	{
-		return getDesignStorage().getDesign(cannon);
-	}
-	
-	public CannonDesign getCannonDesign(String designId)
-	{
-		return getDesignStorage().getDesign(designId);
-	}
+    public DesignStorage getDesignStorage() {
+        return this.config.getDesignStorage();
+    }
 
-	public ProjectileStorage getProjectileStorage()
-	{
-		return this.config.getProjectileStorage();
-	}
+    public CannonDesign getCannonDesign(Cannon cannon) {
+        return getDesignStorage().getDesign(cannon);
+    }
 
-	public Projectile getProjectile(Cannon cannon, MaterialHolder materialHolder)
-	{
-		return ProjectileStorage.getProjectile(cannon, materialHolder);
-	}
-	
-	public Projectile getProjectile(Cannon cannon, ItemStack item)
-	{
-		return ProjectileStorage.getProjectile(cannon, item);
-	}
+    public CannonDesign getCannonDesign(String designId) {
+        return getDesignStorage().getDesign(designId);
+    }
 
-    public Cannon getCannon(UUID id)
-    {
+    public ProjectileStorage getProjectileStorage() {
+        return this.config.getProjectileStorage();
+    }
+
+    public Projectile getProjectile(Cannon cannon, MaterialHolder materialHolder) {
+        return ProjectileStorage.getProjectile(cannon, materialHolder);
+    }
+
+    public Projectile getProjectile(Cannon cannon, ItemStack item) {
+        return ProjectileStorage.getProjectile(cannon, item);
+    }
+
+    public Cannon getCannon(UUID id) {
         return CannonManager.getCannon(id);
     }
 
-	public EntityListener getEntityListener()
-	{
-		return entityListener;
-	}
-	
-	public void sendMessage(Player player, Cannon cannon, MessageEnum message)
-	{
-		this.config.getUserMessages().sendMessage(message, player, cannon);
-	}
+    public EntityListener getEntityListener() {
+        return entityListener;
+    }
 
-    public void sendImpactMessage(Player player, Location impact, boolean canceled)
-    {
+    public void sendMessage(Player player, Cannon cannon, MessageEnum message) {
+        this.config.getUserMessages().sendMessage(message, player, cannon);
+    }
+
+    public void sendImpactMessage(Player player, Location impact, boolean canceled) {
         this.config.getUserMessages().sendImpactMessage(player, impact, canceled);
     }
-	
-	public void createCannon(Cannon cannon)
-	{
-		this.getCannonManager().createCannon(cannon);
-	}
+
+    public void createCannon(Cannon cannon) {
+        this.getCannonManager().createCannon(cannon);
+    }
 
     public ProjectileObserver getProjectileObserver() {
         return observer;
     }
 
-    public ProjectileManager getProjectileManager(){
+    public ProjectileManager getProjectileManager() {
         return this.config.getProjectileManager();
     }
 
@@ -419,7 +368,7 @@ public final class Cannons extends JavaPlugin
         return commands;
     }
 
-    public Economy getEconomy(){
+    public Economy getEconomy() {
         return this.economy;
     }
 }

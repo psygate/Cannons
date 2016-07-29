@@ -5,20 +5,21 @@ import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-public class ProjectileImpactEvent extends Event
-{
+public class ProjectileImpactEvent extends Event {
     private static final HandlerList handlers = new HandlerList();
     private Projectile projectile;
     private Location impactLocation;
     private boolean cancelled;
 
-    public ProjectileImpactEvent(Projectile projectile, Location impactLocation)
-    {
+    public ProjectileImpactEvent(Projectile projectile, Location impactLocation) {
         this.projectile = projectile;
         this.impactLocation = impactLocation;
         this.cancelled = false;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
     public Location getImpactLocation() {
         return impactLocation;
@@ -45,10 +46,6 @@ public class ProjectileImpactEvent extends Event
     }
 
     public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }
