@@ -48,10 +48,10 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
             <!--<url>http://repo.bukkit.org/content/groups/public/</url>-->
         </repository>
-        <!--<repository>-->
-            <!--<id>Plugin Metrics</id>-->
-            <!--<url>http://repo.mcstats.org/content/repositories/public</url>-->
-        <!--</repository>-->
+        <repository>
+            <id>Plugin Metrics</id>
+            <url>http://repo.mcstats.org/content/repositories/public</url>
+        </repository>
         <repository>
             <id>vault-repo</id>
             <url>http://nexus.theyeticave.net/content/repositories/pub_releases</url>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.mcstats.bukkit</groupId>
             <artifactId>metrics-lite</artifactId>
-            <version>R7</version>
+            <version>R8-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
